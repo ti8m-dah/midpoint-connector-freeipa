@@ -1,5 +1,5 @@
 /**
- * Copyright (c) ARTIN solutions
+ * Copyright (c) Inalogy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.artin.idm.connector.freeipa;
+package com.inalogy.midpoint.connectors.freeipa;
 
 import com.evolveum.polygon.rest.AbstractRestConfiguration;
 import org.identityconnectors.framework.spi.ConfigurationProperty;

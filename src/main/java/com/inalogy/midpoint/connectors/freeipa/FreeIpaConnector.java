@@ -1,5 +1,5 @@
 /**
- * Copyright (c) ARTIN solutions
+ * Copyright (c) Inalogy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.artin.idm.connector.freeipa;
+package com.inalogy.midpoint.connectors.freeipa;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 import java.net.URISyntaxException;
 
-import org.apache.http.client.CookieStore;
 import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;

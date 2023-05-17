@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
 
- ~ Copyright (c) ARTIN solutions
+ ~ Copyright (c) Inalogy
  ~
  ~ Licensed under the Apache License, Version 2.0 (the "License");
  ~ you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@
 		<filter>
 			<q:equal>
 				<q:path>c:connectorType</q:path>
-				<q:value>io.artin.idm.connector.freeipa.FreeIpaConnector</q:value>
+				<q:value>com.inalogy.midpoint.connectors.freeipa.FreeIpaConnector</q:value>
 			</q:equal>
 		</filter>
     </connectorRef>
     <connectorConfiguration xmlns:icfc="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/connector-schema-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xsi:type="c:ConnectorConfigurationType">
-        <icfc:configurationProperties xmlns:gen408="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/bundle/com.evolveum.polygon.connector-freeipa/io.artin.idm.connector.freeipa.FreeIpaConnector" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="icfc:ConfigurationPropertiesType">
+        <icfc:configurationProperties xmlns:gen408="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/bundle/com.evolveum.polygon.connector-freeipa/com.inalogy.midpoint.connectors.freeipa.FreeIpaConnector" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="icfc:ConfigurationPropertiesType">
             <gen408:trustAllCertificates>true</gen408:trustAllCertificates>
             <gen408:password>
             	<clearValue>$(ipa.password)</clearValue>

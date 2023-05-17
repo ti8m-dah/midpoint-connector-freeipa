@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) ARTIN solutions
+  ~ Copyright (c) Inalogy
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@
     <name>FreeIPA Connector</name>
 
     <properties>
-        <connectorPackage>io.artin.idm.connector.freeipa</connectorPackage>
+        <connectorPackage>com.inalogy.midpoint.connectors.freeipa</connectorPackage>
         <connectorClass>FreeIpaConnector</connectorClass>
     </properties>
 
