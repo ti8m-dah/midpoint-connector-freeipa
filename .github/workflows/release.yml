@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '17'
-          distribution: 'OpenJDK'
+          distribution: 'oracle'
       - name: Build project # This would actually build your project, using zip for an example artifact
         run: mvn --batch-mode clean install -DskipTests=true
       - name: Upload Connector
