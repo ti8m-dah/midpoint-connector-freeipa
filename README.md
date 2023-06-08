@@ -25,7 +25,7 @@ FreeIPA Connector contains support for USER, ROLE and GROUP entity.
 mvn clean install
 ```
 
-After successful the build, you can find `connector-freeipa-1.0.0.0.jar` in `target` directory.
+After successful the build, you can find `connector-freeipa-1.1.0.0.jar` in `target` directory.
 
 ## Configuring resource
 
@@ -38,7 +38,7 @@ After successful the build, you can find `connector-freeipa-1.0.0.0.jar` in `tar
 * Verify if service account has set password never expire, has "User authentication types" "Password" and not needed to change password at first log on.
 * Try to log in with created service account (user) to FreeIPA web GUI & verify if you have required permissions to create/update/delete user, create/update/delete groups & roles and his memberships.
 * Set up Logger for package "com.inalogy.midpoint.connectors.freeipa" to TRACE in midpoint over System/Logging/Loggers & verify midpoint.log for error details.
-* In some cases FreeIPA missconfiguration cause to return HTML error page instead of JSON and this is showd as error message in Test Connection "org.json.JSONException(A JSONObject text must begin with '{' at 1 [character 2 line 1])"
+* In some cases FreeIPA misconfiguration cause to return HTML error page instead of JSON and this is showed as error message in Test Connection "org.json.JSONException(A JSONObject text must begin with '{' at 1 [character 2 line 1])"
 
 ## License
 
@@ -46,5 +46,5 @@ Licensed under the [Apache License 2.0](/LICENSE).
 
 ## Status
 
-FreeIPA Connector is intended for production use. Tested with MidPoint version 4.0 LTS. The connector was introduced as a contribution to midPoint project by [Inalogy](https://www.inalogy.com) and is not officially supported by Evolveum.
+FreeIPA Connector is intended for production use. Tested with MidPoint version 4.6 LTS. The connector was introduced as a contribution to midPoint project by [Inalogy](https://www.inalogy.com) and is not officially supported by Evolveum.
 If you need support, please contact info@inalogy.com.
