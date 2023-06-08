@@ -46,5 +46,5 @@ Licensed under the [Apache License 2.0](/LICENSE).
 
 ## Status
 
-FreeIPA Connector is intended for production use. Tested with MidPoint version 4.6 LTS. The connector was introduced as a contribution to midPoint project by [Inalogy](https://www.inalogy.com) and is not officially supported by Evolveum.
+FreeIPA Connector is intended for production use. Tested with MidPoint version 4.6. The connector was introduced as a contribution to midPoint project by [Inalogy](https://www.inalogy.com) and is not officially supported by Evolveum.
 If you need support, please contact info@inalogy.com.
