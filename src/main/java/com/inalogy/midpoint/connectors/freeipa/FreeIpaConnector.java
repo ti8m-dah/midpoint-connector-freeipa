@@ -104,6 +104,7 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
 	public static final String ATTR_MEMBEROF_GROUP = "memberof_group";
 	public static final String ATTR_MEMBEROF_ROLE = "memberof_role";
 	public static final String ATTR_DESCRIPTION = "description";
+	public static final String ATTR_PHYSICALDELIVERYOFFICENAME = "physicaldeliveryofficename";
 	public static final String ATTR_KRBPASSWORDEXPIRATION = "krbpasswordexpiration";
 
 	public static final String ATTR_IPAUNIQUEID = "ipauniqueid";
@@ -345,6 +346,12 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
 
 			AttributeInfoBuilder attrKrbPwdPolicyReference = new AttributeInfoBuilder(ATTR_KRBPWDPOLICYREFERENCE); // missing from schema (workaround)
 			objClassBuilder.addAttributeInfo(attrKrbPwdPolicyReference.build());
+
+			AttributeInfoBuilder attrDescriptionBuilder = new AttributeInfoBuilder(ATTR_DESCRIPTION); // missing from schema (workaround)
+			objClassBuilder.addAttributeInfo(attrDescriptionBuilder.build());
+
+			AttributeInfoBuilder attrPhysicalDeliveryOfficeNameBuilder = new AttributeInfoBuilder(ATTR_PHYSICALDELIVERYOFFICENAME); // missing from schema (workaround)
+			objClassBuilder.addAttributeInfo(attrPhysicalDeliveryOfficeNameBuilder.build());
 
 		}
 		
