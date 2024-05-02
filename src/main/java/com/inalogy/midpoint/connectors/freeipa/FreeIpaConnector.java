@@ -193,6 +193,9 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
         // log in
         HttpPost httpPost = new HttpPost(getConfiguration().getServiceAddress()+"/session/login_password");
 
+		// this header is required for login from version 4.9.12
+		httpPost.setHeader("Referer", getConfiguration().getServiceAddress());
+
         HttpClientContext context = HttpClientContext.create();
 
         List<NameValuePair> params = new ArrayList<NameValuePair>();
