@@ -499,7 +499,19 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
                 } else {
                 	JSONObject users = callRequest(getIpaRequest("user_find", new JSONObject().put("all", true), new JSONArray()));
                 	JSONArray results = users.getJSONObject("result").getJSONArray("result");
-            		for (int i = 0; i < results.length(); ++i) {
+					// added to support preserved accounts
+					if (getConfiguration().getSupportPreserved()){
+						JSONObject presparams = new JSONObject();
+						presparams.put("all", true);
+						presparams.put("preserved", true);
+						JSONObject preserved_users = callRequest(getIpaRequest("user_find", presparams, new JSONArray()));
+						JSONArray preserved_results = preserved_users.getJSONObject("result").getJSONArray("result");
+						for (int i = 0; i < preserved_results.length(); ++i) {
+							results.put(preserved_results.get(i));
+						}
+					}
+
+					for (int i = 0; i < results.length(); ++i) {
             		    JSONObject user = results.getJSONObject(i);
                         ConnectorObject connectorObject = convertUserToConnectorObject(user);
                         handler.handle(connectorObject);
@@ -834,9 +846,25 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
         }
 
         if (params.length()>0) {
-	        JSONObject jores = callRequest(request);
-	        LOG.info("response UID: {0}, body: {1}", loginNew, jores);
-        }
+			// changed to support preserved accounts
+			JSONObject jores;
+			try {
+				jores = callRequest(request);
+				LOG.info("response UID: {0}, body: {1}", loginNew, jores);
+			} catch (AlreadyExistsException e) {
+				if ( getConfiguration().getSupportPreserved() ){
+					//check if in preserved, if so, send undel (it might be preserved)
+					request = getIpaRequest("user_undel" , new JSONObject(), params_array);
+					jores = callRequest(request);
+					request = getIpaRequest("user_mod" , params, params_array);
+					jores = callRequest(request);
+					LOG.info("\n\n===response UID: {0}, body: {1}", loginNew, jores);
+				}
+				else{ // if we don't use preserved accounts, rethrow the exception
+					throw new AlreadyExistsException(e);
+				}
+			}
+		}
         
         handleEnable(attributes, loginNew, create);
         handleRoles(attributes, loginNew, create);
@@ -1108,7 +1136,12 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
             LOG.ok("delete user, Uid: {0}", uid);
             JSONArray params_array = new JSONArray();
             params_array.put(uid.getUidValue());
-    		JSONObject request = getIpaRequest("user_del", new JSONObject(), params_array);
+			// updated to support preserved accounts
+			JSONObject pparams = new JSONObject();
+			if (getConfiguration().getSupportPreserved()) {
+				pparams.put("preserve", true);
+			}
+			JSONObject request = getIpaRequest("user_del", pparams, params_array);
     		JSONObject jores = callRequest(request);
             LOG.info("response body: {0} for user deletion for uid: ", jores, uid);
 		} else if (objectClass.is(OBJECT_CLASS_ROLE)) {

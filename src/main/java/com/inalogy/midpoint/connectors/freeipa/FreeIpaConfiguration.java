@@ -25,6 +25,7 @@ import org.identityconnectors.framework.spi.ConfigurationProperty;
 public class FreeIpaConfiguration extends AbstractRestConfiguration {
     private int sizelimit = 100;
     private int timelimit = 2;
+    private boolean support_preserved = false;
 
     @ConfigurationProperty(
             displayMessageKey = "freeipa.config.sizelimit",
@@ -50,4 +51,15 @@ public class FreeIpaConfiguration extends AbstractRestConfiguration {
         this.timelimit = timelimit;
     }
 
+    @ConfigurationProperty(
+            displayMessageKey = "freeipa.config.support_preserved",
+            helpMessageKey = "freeipa.config.support_preserved.help"
+    )
+    public Boolean getSupportPreserved() {
+        return this.support_preserved;
+    }
+
+    public void setSupportPreserved(Boolean support_preserved) {
+        this.support_preserved = support_preserved;
+    }
 }
