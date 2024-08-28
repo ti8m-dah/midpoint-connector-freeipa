@@ -859,10 +859,14 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
 					try{
 						request = getIpaRequest("user_undel" , new JSONObject(), params_array);
 						jores = callRequest(request);
+						request = getIpaRequest("user_mod" , params, params_array);
+						jores = callRequest(request);
 					} catch (ConnectorIOException active_e){
 						//a bit ugly, but...
 						if (active_e.getMessage().contains(loginNew) && active_e.getMessage().contains("is already active")){
-							throw new AlreadyExistsException(e);
+							request = getIpaRequest("user_mod" , params, params_array);
+							jores = callRequest(request);
+							//throw new AlreadyExistsException(e);
 						}
 						else{
 							throw new ConnectorIOException(active_e);
