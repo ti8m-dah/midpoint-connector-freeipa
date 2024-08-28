@@ -853,12 +853,21 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
 				LOG.info("response UID: {0}, body: {1}", loginNew, jores);
 			} catch (AlreadyExistsException e) {
 				if ( getConfiguration().getSupportPreserved() ){
-					//check if in preserved, if so, send undel (it might be preserved)
-					request = getIpaRequest("user_undel" , new JSONObject(), params_array);
-					jores = callRequest(request);
-					request = getIpaRequest("user_mod" , params, params_array);
-					jores = callRequest(request);
-					LOG.info("\n\n===response UID: {0}, body: {1}", loginNew, jores);
+					//try to undelete the account, if it is active an ConnectorIOException will be thrown
+					//verify that it is loginNew and " is already active"
+					// if so, re-throw already exists
+					try{
+						request = getIpaRequest("user_undel" , new JSONObject(), params_array);
+						jores = callRequest(request);
+					} catch (ConnectorIOException active_e){
+						//a bit ugly, but...
+						if (active_e.getMessage().contains(loginNew) && active_e.getMessage().contains("is already active")){
+							throw new AlreadyExistsException(e);
+						}
+						else{
+							throw new ConnectorIOException(active_e);
+						}
+					}
 				}
 				else{ // if we don't use preserved accounts, rethrow the exception
 					throw new AlreadyExistsException(e);
@@ -1139,6 +1148,7 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
 			// updated to support preserved accounts
 			JSONObject pparams = new JSONObject();
 			if (getConfiguration().getSupportPreserved()) {
+				LOG.ok("preserve user, Uid: {0}", uid);
 				pparams.put("preserve", true);
 			}
 			JSONObject request = getIpaRequest("user_del", pparams, params_array);
