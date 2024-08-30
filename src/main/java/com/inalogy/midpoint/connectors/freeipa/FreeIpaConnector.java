@@ -859,8 +859,16 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
         }
 
         if (params.length()>0) {
-			JSONObject jores = callRequest(request);
-			LOG.info("response UID: {0}, body: {1}", loginNew, jores);
+			JSONObject jores;
+			try {
+				jores = callRequest(request);
+				LOG.info("response UID: {0}, body: {1}", loginNew, jores);
+			} catch (AlreadyExistsException e) {
+				//shadow deleted, but account still available on resource - not a likely scenario in prod env
+				request = getIpaRequest("user_mod" , params, params_array);
+				jores = callRequest(request);
+				LOG.info("User already existed, ran user_mod - response UID: {0}, body: {1}", loginNew, jores);
+			}
 		}
         
         handleEnable(attributes, loginNew, create);
