@@ -844,8 +844,12 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
 		if ( getConfiguration().getSupportPreserved() ){
 			if (preserved_user_list.contains(loginNew)){
 				JSONObject undelrequest = getIpaRequest("user_undel" , new JSONObject(), params_array);
-				JSONObject undeljores = callRequest(undelrequest);
-				LOG.info("response after set user_undel UID: {0}, body: {1}", loginNew, undeljores);
+				try{
+					JSONObject undeljores = callRequest(undelrequest);
+					LOG.info("response after set user_undel UID: {0}, body: {1}", loginNew, undeljores);
+				} catch (Exception all_ex){
+					LOG.error("Error running undel, user doesn't exist? Error: {0}", all_ex);
+				}
 				preserved_user_list.remove(loginNew);
 			}
 		}
