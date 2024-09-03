@@ -17,11 +17,7 @@ package com.inalogy.midpoint.connectors.freeipa;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.net.URISyntaxException;
 
 import org.apache.http.NameValuePair;
@@ -139,6 +135,9 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
 	
 	// Free IPA schema cache
 	private static JSONObject schema = null;
+
+	// this should probably be done in a better way
+	private static Set<String> preserved_user_list = new HashSet<>();
 	
     @Override
     public void init(Configuration configuration) {
@@ -499,7 +498,19 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
                 } else {
                 	JSONObject users = callRequest(getIpaRequest("user_find", new JSONObject().put("all", true), new JSONArray()));
                 	JSONArray results = users.getJSONObject("result").getJSONArray("result");
-            		for (int i = 0; i < results.length(); ++i) {
+					// added to support preserved accounts
+					if (getConfiguration().getSupportPreserved()){
+						JSONObject presparams = new JSONObject();
+						presparams.put("all", true);
+						presparams.put("preserved", true);
+						JSONObject preserved_users = callRequest(getIpaRequest("user_find", presparams, new JSONArray()));
+						JSONArray preserved_results = preserved_users.getJSONObject("result").getJSONArray("result");
+						for (int i = 0; i < preserved_results.length(); ++i) {
+							results.put(preserved_results.get(i));
+						}
+					}
+
+					for (int i = 0; i < results.length(); ++i) {
             		    JSONObject user = results.getJSONObject(i);
                         ConnectorObject connectorObject = convertUserToConnectorObject(user);
                         handler.handle(connectorObject);
@@ -578,6 +589,13 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
             String key = keys.next();
         	Object value = user.get(key); 
 //    		LOG.ok("JSON key:{0}={1}", key, value);
+			if(getConfiguration().getSupportPreserved()){
+				if (key.contains("preserved")) {
+					if (Boolean.TRUE.equals(value)){
+						preserved_user_list.add(uid);
+					}
+				}
+			}
             if (value instanceof JSONObject || value instanceof Boolean || value instanceof String) {
             	// single value
             	addAttr(builder, key, value);
@@ -798,9 +816,6 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
         			|| attrName.equals(FreeIpaConnector.ATTR_MEMBEROF_GROUP)) {
         		continue; // proceeed in different way...
         	}
-        	
-
-        	
     		if (USER_MULTIVALUED.contains(attrName)) {
     			JSONArray values = new JSONArray();
     			if (attrValue!=null) {
@@ -825,6 +840,20 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
         
         JSONArray params_array = new JSONArray();
         params_array.put(create ? loginNew : uid.getUidValue());
+		//if we support preserved accounts, undelete before anything else
+		if ( getConfiguration().getSupportPreserved() ){
+			if (preserved_user_list.contains(loginNew)){
+				JSONObject undelrequest = getIpaRequest("user_undel" , new JSONObject(), params_array);
+				try{
+					JSONObject undeljores = callRequest(undelrequest);
+					LOG.info("response after set user_undel UID: {0}, body: {1}", loginNew, undeljores);
+				} catch (Exception all_ex){
+					LOG.error("Error running undel, user doesn't exist? Error: {0}", all_ex);
+				}
+				preserved_user_list.remove(loginNew);
+			}
+		}
+
 		JSONObject request = getIpaRequest(create ? "user_add" : "user_mod", params, params_array);
         
         LOG.ok("user request (without password): {0}", request.toString());
@@ -834,9 +863,17 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
         }
 
         if (params.length()>0) {
-	        JSONObject jores = callRequest(request);
-	        LOG.info("response UID: {0}, body: {1}", loginNew, jores);
-        }
+			JSONObject jores;
+			try {
+				jores = callRequest(request);
+				LOG.info("response UID: {0}, body: {1}", loginNew, jores);
+			} catch (AlreadyExistsException e) {
+				//shadow deleted, but account still available on resource - not a likely scenario in prod env
+				request = getIpaRequest("user_mod" , params, params_array);
+				jores = callRequest(request);
+				LOG.info("User already existed, ran user_mod - response UID: {0}, body: {1}", loginNew, jores);
+			}
+		}
         
         handleEnable(attributes, loginNew, create);
         handleRoles(attributes, loginNew, create);
@@ -1108,7 +1145,13 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
             LOG.ok("delete user, Uid: {0}", uid);
             JSONArray params_array = new JSONArray();
             params_array.put(uid.getUidValue());
-    		JSONObject request = getIpaRequest("user_del", new JSONObject(), params_array);
+			// updated to support preserved accounts
+			JSONObject pparams = new JSONObject();
+			if (getConfiguration().getSupportPreserved()) {
+				LOG.ok("preserve user, Uid: {0}", uid);
+				pparams.put("preserve", true);
+			}
+			JSONObject request = getIpaRequest("user_del", pparams, params_array);
     		JSONObject jores = callRequest(request);
             LOG.info("response body: {0} for user deletion for uid: ", jores, uid);
 		} else if (objectClass.is(OBJECT_CLASS_ROLE)) {
