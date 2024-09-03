@@ -17,11 +17,7 @@ package com.inalogy.midpoint.connectors.freeipa;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.net.URISyntaxException;
 
 import org.apache.http.NameValuePair;
@@ -139,6 +135,9 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
 	
 	// Free IPA schema cache
 	private static JSONObject schema = null;
+
+	// this should probably be done in a better way
+	private static Set<String> preserved_user_list = new HashSet<>();
 	
     @Override
     public void init(Configuration configuration) {
@@ -590,6 +589,13 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
             String key = keys.next();
         	Object value = user.get(key); 
 //    		LOG.ok("JSON key:{0}={1}", key, value);
+			if(getConfiguration().getSupportPreserved()){
+				if (key.contains("preserved")) {
+					if (Boolean.TRUE.equals(value)){
+						preserved_user_list.add(uid);
+					}
+				}
+			}
             if (value instanceof JSONObject || value instanceof Boolean || value instanceof String) {
             	// single value
             	addAttr(builder, key, value);
@@ -810,9 +816,6 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
         			|| attrName.equals(FreeIpaConnector.ATTR_MEMBEROF_GROUP)) {
         		continue; // proceeed in different way...
         	}
-        	
-
-        	
     		if (USER_MULTIVALUED.contains(attrName)) {
     			JSONArray values = new JSONArray();
     			if (attrValue!=null) {
@@ -837,6 +840,20 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
         
         JSONArray params_array = new JSONArray();
         params_array.put(create ? loginNew : uid.getUidValue());
+		//if we support preserved accounts, undelete before anything else
+		if ( getConfiguration().getSupportPreserved() ){
+			if (preserved_user_list.contains(loginNew)){
+				JSONObject undelrequest = getIpaRequest("user_undel" , new JSONObject(), params_array);
+				try{
+					JSONObject undeljores = callRequest(undelrequest);
+					LOG.info("response after set user_undel UID: {0}, body: {1}", loginNew, undeljores);
+				} catch (Exception all_ex){
+					LOG.error("Error running undel, user doesn't exist? Error: {0}", all_ex);
+				}
+				preserved_user_list.remove(loginNew);
+			}
+		}
+
 		JSONObject request = getIpaRequest(create ? "user_add" : "user_mod", params, params_array);
         
         LOG.ok("user request (without password): {0}", request.toString());
@@ -846,23 +863,15 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
         }
 
         if (params.length()>0) {
-			// changed to support preserved accounts
 			JSONObject jores;
 			try {
 				jores = callRequest(request);
 				LOG.info("response UID: {0}, body: {1}", loginNew, jores);
 			} catch (AlreadyExistsException e) {
-				if ( getConfiguration().getSupportPreserved() ){
-					//check if in preserved, if so, send undel (it might be preserved)
-					request = getIpaRequest("user_undel" , new JSONObject(), params_array);
-					jores = callRequest(request);
-					request = getIpaRequest("user_mod" , params, params_array);
-					jores = callRequest(request);
-					LOG.info("\n\n===response UID: {0}, body: {1}", loginNew, jores);
-				}
-				else{ // if we don't use preserved accounts, rethrow the exception
-					throw new AlreadyExistsException(e);
-				}
+				//shadow deleted, but account still available on resource - not a likely scenario in prod env
+				request = getIpaRequest("user_mod" , params, params_array);
+				jores = callRequest(request);
+				LOG.info("User already existed, ran user_mod - response UID: {0}, body: {1}", loginNew, jores);
 			}
 		}
         
@@ -1139,6 +1148,7 @@ public class FreeIpaConnector extends AbstractRestConnector<FreeIpaConfiguration
 			// updated to support preserved accounts
 			JSONObject pparams = new JSONObject();
 			if (getConfiguration().getSupportPreserved()) {
+				LOG.ok("preserve user, Uid: {0}", uid);
 				pparams.put("preserve", true);
 			}
 			JSONObject request = getIpaRequest("user_del", pparams, params_array);
