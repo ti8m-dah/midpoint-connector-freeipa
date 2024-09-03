@@ -25,7 +25,7 @@ FreeIPA Connector contains support for USER, ROLE and GROUP entity.
 mvn clean install
 ```
 
-After successful the build, you can find `connector-freeipa-1.1.2.0.jar` in `target` directory.
+After successful the build, you can find `connector-freeipa-1.1.2.1.jar` in `target` directory.
 
 ## Configuring resource
 
