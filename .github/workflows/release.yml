@@ -31,6 +31,7 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+          cache: 'maven'
 
       - name: Build project # This would actually build your project, using zip for an example artifact
         run: mvn --batch-mode clean install -DskipTests=true
